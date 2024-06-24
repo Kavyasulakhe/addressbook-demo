@@ -1,42 +1,36 @@
 pipeline {
     agent any
-    tools{
-        maven 'myMaven'
+    tools {
+        maven 'maven1'
     }
-
+    environment {
+        dockerversion = 'karunasulakhe/addressbook:1.${env.BUILD_NUMBER}'
+    }
     stages {
-        stage('Checkout the Source Code') {
+        stage('checkout') {
             steps {
-                echo 'Checkout the code..........................................'
                 git 'https://github.com/niladrimondal/addressbook-demo.git'
             }
         }
-        stage('Build The Source Code') {
-            steps{
-			    script{
-				     try{
-                       echo 'Build the Source Code ....................................'
-                       sh "mvn clean package"
-					 }
-					 catch(Exception e){
-                         echo 'handling the exception ...................................'
-                         emailext body: '''Hello Developer,
-
-                         The Job got failed during Build.
-
-                         Thanks,
-                         Devops''', subject: 'Attention: $(JOB_NAME) is failed. Please look into the Build Number $(BUILD_NUMBER)', to: 'niladrimondal.mondal@gmail.com'
-                    }
-				
-				}
-                
-            }
-        }
-        stage('Deploy the Application') {
+        stage('build') {
             steps {
-                echo 'Deploy the Application.....................................'
-                deploy adapters: [tomcat9(credentialsId: 'tomcat-cred', path: '', url: 'http://54.158.200.34:8081/')], contextPath: 'addressbookssimplilearn', war: '**/*.war'
+                sh 'mvn clean package'
             }
         }
+        stage('create docker image') {
+            steps {
+                sh 'docker build -t kavyasulakhe/addressbook:1.${BUILD_NUMBER} .'
+            }
+        }
+         stage('Docker Push') {
+      agent any
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'dockerpwd', usernameVariable: 'dockeruser')]) {
+          sh "docker login -u ${env.dockeruser} -p ${env.dockerpwd}"
+          sh 'docker push kavyasulakhe/addressbook:1.${BUILD_NUMBER}'
+        }
+      }
+    }
+
     }
 }
