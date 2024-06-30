@@ -2,15 +2,16 @@
 - hosts: all
   become: yes
   tasks:
-  - name: pulling docker image
-    docker_image:
-      name: kavyasulakhe/addressbook:1.3
-      source: pull
-  - name: running docker container
-    docker_container:
-    name: addressbook:1.3
-    image: kavyasulakhe/addressbook:1.3
-    ports:
-      - 8093:8080
-      
- 
+    - name: pulling docker image
+      docker_image:
+        name: kavyasulakhe/addressbook:1.3
+        source: pull
+
+    - name: running docker container
+      docker_container:
+        name: addressbook_container
+        image: kavyasulakhe/addressbook:1.3
+        state: started
+        restart_policy: always
+        ports:
+          - "8093:8080"
