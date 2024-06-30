@@ -1,17 +1,22 @@
----
 - hosts: all
   become: yes
+  vars:
+    ansible_python_interpreter: /usr/bin/python3  # Adjust path if necessary
+
   tasks:
-    - name: pulling docker image
+    - name: Ensure Docker SDK for Python is installed
+      pip:
+        name: docker
+        state: present
+
+    - name: Pull Docker image
       docker_image:
         name: kavyasulakhe/addressbook:1.3
         source: pull
 
-    - name: running docker container
+    - name: Run Docker container
       docker_container:
-        name: addressbook_container
+        name: addressbook
         image: kavyasulakhe/addressbook:1.3
-        state: started
-        restart_policy: always
         ports:
           - "8093:8080"
