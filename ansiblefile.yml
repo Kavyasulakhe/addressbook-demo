@@ -4,11 +4,6 @@
     ansible_python_interpreter: /usr/bin/python3  # Adjust path if necessary
 
   tasks:
-    - name: Ensure Docker SDK for Python is installed
-      pip:
-        name: docker
-        state: present
-
     - name: Pull Docker image
       docker_image:
         name: kavyasulakhe/addressbook:1.3
